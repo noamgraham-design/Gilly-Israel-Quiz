@@ -7,17 +7,19 @@
 <meta property="og:type"        content="website"/>
 <meta property="og:title"       content="Gilly's Israel Quiz"/>
 <meta property="og:description" content="How well do you know Israel? Click on the map to find cities and towns!"/>
-<meta property="og:image"       content="logo.png"/>
+<meta property="og:image"       content="logo_nb.png"/>
 <meta property="og:image:width"  content="512"/>
 <meta property="og:image:height" content="512"/>
 <meta name="twitter:card"       content="summary"/>
 <meta name="twitter:title"      content="Gilly's Israel Quiz"/>
-<meta name="twitter:image"      content="logo.png"/>
+<meta name="twitter:image"      content="logo_nb.png"/>
+<link rel="icon" type="image/png" href="logo_head.png"/>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Alef:wght@400;700&family=Playfair+Display:wght@700;900&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet"/>
 <script type="module">
   import { initializeApp }                          from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { initializeAppCheck, ReCaptchaV3Provider } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app-check.js";
   import { getAuth, onAuthStateChanged, signOut,
            GoogleAuthProvider, signInWithPopup,
            createUserWithEmailAndPassword,
@@ -41,6 +43,10 @@
   };
 
   const app  = initializeApp(firebaseConfig);
+  initializeAppCheck(app, {
+    provider: new ReCaptchaV3Provider('6Lda1oIsAAAAADHAztu6yP3k4Pe81Q_u0yujccMY'),
+    isTokenAutoRefreshEnabled: true,
+  });
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
@@ -183,6 +189,9 @@
     from { opacity:0; transform: scale(0.88) translateY(16px); }
     to   { opacity:1; transform: scale(1)    translateY(0); }
   }
+  #login-card.google-pending #login-main-section {
+    filter: blur(3px); opacity: 0.45; pointer-events: none;
+  }
   #login-card h2 {
     font-family: 'Playfair Display', 'Alef', serif; font-size: 1.7rem;
     font-weight: 900; text-align: center; margin-bottom: 2px;
@@ -246,6 +255,45 @@
     align-items: center; justify-content: center;
   }
   #settings-modal.open { display: flex; }
+  #terms-modal {
+    display: none; position: fixed; inset: 0; z-index: 10200;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  #terms-modal.open { display: flex; }
+  #terms-modal-card {
+    background: var(--surface); border-radius: 16px;
+    padding: 32px 28px 24px; width: min(560px, 94vw);
+    max-height: 80vh; overflow-y: auto; position: relative;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.28);
+  }
+  #terms-modal-close {
+    position: absolute; top: 12px; right: 14px; background: none; border: none;
+    font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--text);
+  }
+  #terms-modal-card h2 { margin: 0 0 14px; font-size: 1.1rem; }
+  #terms-modal-card ol { padding-inline-start: 1.4em; margin: 0; }
+  #terms-modal-card li { margin-bottom: 10px; font-size: 0.87rem; line-height: 1.6; }
+  #privacy-modal {
+    display: none; position: fixed; inset: 0; z-index: 10200;
+    background: rgba(0,0,0,0.55); backdrop-filter: blur(4px);
+    align-items: center; justify-content: center; padding: 20px;
+  }
+  #privacy-modal.open { display: flex; }
+  #privacy-modal-card {
+    background: var(--surface); border-radius: 16px;
+    padding: 32px 28px 24px; width: min(560px, 94vw);
+    max-height: 80vh; overflow-y: auto; position: relative;
+    box-shadow: 0 12px 48px rgba(0,0,0,0.28);
+  }
+  #privacy-modal-close {
+    position: absolute; top: 12px; right: 14px; background: none; border: none;
+    font-size: 1.4rem; line-height: 1; cursor: pointer; color: var(--text);
+  }
+  #privacy-modal-card h2 { margin: 0 0 4px; font-size: 1.1rem; }
+  #privacy-modal-card ol { padding-inline-start: 1.4em; margin: 12px 0 0; }
+  #privacy-modal-card li { margin-bottom: 10px; font-size: 0.87rem; line-height: 1.6; }
+  #privacy-modal-card .privacy-updated { font-size: 0.78rem; color: var(--text-muted, #888); margin-bottom: 14px; }
   #settings-card {
     background: var(--surface); border-radius: 20px;
     padding: 36px 32px 28px; width: min(400px, 92vw);
@@ -1069,10 +1117,19 @@
     font-size: 10px !important;
     padding: 1px 5px !important;
     line-height: 1.2 !important;
-    max-width: 60vw;
+    max-width: 40vw;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    transition: max-width 0.3s ease;
+    opacity: 0.7;
+  }
+  .leaflet-control-attribution:hover {
+    max-width: 90vw;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: unset;
+    opacity: 1;
   }
   /* Tooltip */
   .city-label {
@@ -1988,6 +2045,7 @@
 
   /* MOBILE RESPONSIVE STYLES */
   @media (max-width: 768px) {
+    .leaflet-control-attribution { max-width: 30vw; font-size: 9px !important; }
     /* Scoreboard panel — popup below the results bar on mobile */
     #scoreboard-panel {
       top: 68px !important; left: 0 !important; right: 0 !important;
@@ -3134,6 +3192,7 @@
   <div id="fact-modal-card">
     <div id="fact-modal-title"></div>
     <div id="fact-modal-body"></div>
+    <div id="fact-login-prompt" style="display:none;font-size:1rem;color:var(--text)"><a id="fact-login-link" style="cursor:pointer;color:#1a6fd4;text-decoration:underline" onclick="openLoginModalForFact()">Log in</a><span id="fact-login-text"> for fun facts</span></div>
     <button id="fact-modal-close" onclick="closeFactModal()">סגור</button>
   </div>
 </div>
@@ -3165,10 +3224,7 @@
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
             <span id="auth-dd-settings">Settings</span>
           </button>
-          <button class="auth-dropdown-item" onclick="switchAccount()">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
-            <span id="auth-dd-switch">Switch account</span>
-          </button>
+
           <button class="auth-dropdown-item auth-dropdown-signout" onclick="signOutUser()">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
             <span id="auth-dd-signout">Sign out</span>
@@ -3409,6 +3465,60 @@
   </div>
 </div>
 
+<div id="terms-modal" role="dialog" aria-modal="true" aria-labelledby="terms-modal-title" onclick="if(event.target===this)closeTermsModal()">
+  <div id="terms-modal-card">
+    <button id="terms-modal-close" onclick="closeTermsModal()" aria-label="Close">✕</button>
+    <div id="terms-modal-he" dir="rtl">
+      <h2 id="terms-modal-title">תנאי שימוש</h2>
+      <ol>
+        <li><strong>השירות:</strong> המשחק ניתן לשימוש "כמות שהוא" (As-Is). המפעיל אינו אחראי לזמינות הרציפה של השרתים.</li>
+        <li><strong>הצהרת בינה מלאכותית (AI):</strong> חלק מהתכנים והעובדות במשחק הופקו באמצעות כלי בינה מלאכותית. מידע זה עשוי לכלול אי-דיוקים או טעויות. השימוש במידע הוא על אחריות המשתמש בלבד והמפעיל לא יישא באחריות לכל נזק הנובע מהסתמכות על תוכן זה.</li>
+        <li><strong>דיוק מפות:</strong> המפות מבוססות על שירותי Leaflet/OpenStreetMap. אין לראות במפות כהצהרה רשמית על גבולות או שמות גיאוגרפיים.</li>
+        <li><strong>הגבלת אחריות:</strong> המפעיל לא יהיה אחראי לכל נזק ישיר או עקיף הנובע מהשימוש במשחק.</li>
+        <li><strong>סמכות שיפוט:</strong> הדין החל הוא הדין הישראלי. סמכות השיפוט הבלעדית נתונה לבתי המשפט במחוז המרכז.</li>
+      </ol>
+    </div>
+    <div id="terms-modal-en" dir="ltr" style="display:none">
+      <h2>Terms of Use</h2>
+      <ol>
+        <li><strong>The Service:</strong> The game is provided "As-Is." The operator is not responsible for server uptime or data loss.</li>
+        <li><strong>AI Content Disclosure:</strong> Some facts and content in this game are generated by Artificial Intelligence. This information may contain inaccuracies or errors. Use of this content is at the user's sole risk; the operator shall not be liable for any damages arising from reliance on this information.</li>
+        <li><strong>Map Accuracy:</strong> Maps are powered by Leaflet/OpenStreetMap. Map data should not be interpreted as an official statement regarding borders or geographic names.</li>
+        <li><strong>Limitation of Liability:</strong> To the fullest extent permitted by law, the operator shall not be liable for any direct or indirect damages resulting from the use of the game.</li>
+        <li><strong>Jurisdiction:</strong> These terms are governed by Israeli law. Exclusive jurisdiction is granted to the courts of the Central District of Israel.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<div id="privacy-modal" role="dialog" aria-modal="true" aria-labelledby="privacy-modal-title" onclick="if(event.target===this)closePrivacyModal()">
+  <div id="privacy-modal-card">
+    <button id="privacy-modal-close" onclick="closePrivacyModal()" aria-label="Close">✕</button>
+    <div id="privacy-modal-he" dir="rtl">
+      <h2 id="privacy-modal-title">מדיניות פרטיות</h2>
+      <p class="privacy-updated">עודכן מרץ 2026</p>
+      <ol>
+        <li><strong>המידע שנאסף:</strong> אנו אוספים כתובת אימייל ושם (דרך Google Login) ונתוני שימוש אנונימיים (דרך Google Analytics).</li>
+        <li><strong>מטרת האיסוף:</strong> זיהוי המשתמש, שמירת הישגים, ושיפור טכנולוגי של המשחק.</li>
+        <li><strong>אחסון וצדדים שלישיים:</strong> המידע נשמר בשירותי הענן של Google (Firebase) ועשוי להיות מאוחסן מחוץ לגבולות ישראל.</li>
+        <li><strong>זכויות המשתמש:</strong> הנך זכאי לעיין במידע, לעדכנו או למחוק את חשבונך בכל עת דרך תפריט ההגדרות או בפנייה למייל: <a href="mailto:gillyisraelquiz@gmail.com">gillyisraelquiz@gmail.com</a>.</li>
+        <li><strong>עוגיות:</strong> האתר משתמש בעוגיות הכרחיות לצורך חיבור המשתמש ובכלים של Google Analytics לניטור תנועה.</li>
+      </ol>
+    </div>
+    <div id="privacy-modal-en" dir="ltr" style="display:none">
+      <h2>Privacy Policy</h2>
+      <p class="privacy-updated">Updated March 2026</p>
+      <ol>
+        <li><strong>Data Collected:</strong> We collect your email and name (via Google Login) and anonymous usage data (via Google Analytics).</li>
+        <li><strong>Purpose:</strong> For user authentication, saving game progress, and technical improvement.</li>
+        <li><strong>Storage &amp; Third Parties:</strong> Data is stored on Google Cloud (Firebase) and may be hosted outside of Israel.</li>
+        <li><strong>User Rights:</strong> You have the right to access, update, or delete your data at any time via the settings menu or by contacting: <a href="mailto:gillyisraelquiz@gmail.com">gillyisraelquiz@gmail.com</a>.</li>
+        <li><strong>Cookies:</strong> We use essential cookies for login functionality and Google Analytics for traffic monitoring.</li>
+      </ol>
+    </div>
+  </div>
+</div>
+
 <div id="login-modal" role="dialog" aria-modal="true" aria-labelledby="login-modal-heading">
   <div id="login-card" style="position:relative">
     <button id="login-modal-close" onclick="closeLoginModal()" aria-label="סגור / Close">✕</button>
@@ -3425,8 +3535,7 @@
 
       <div id="login-form-section">
         <div style="display:flex;flex-direction:column;gap:8px">
-          <label for="login-name" style="display:none" id="login-name-label">Display name</label>
-          <input class="login-input" id="login-name" type="text" placeholder="Display name" aria-label="Display name" style="display:none"/>
+
           <label for="login-email" class="sr-only">Email address</label>
           <input class="login-input" id="login-email" type="email" placeholder="Email address" aria-label="Email address"/>
           <label for="login-password" class="sr-only">Password</label>
@@ -3438,7 +3547,7 @@
         </div>
         <div id="signup-terms-row">
           <input type="checkbox" id="signup-terms"/>
-          <label for="signup-terms" id="signup-terms-lbl" dir="ltr">By signing up, you agree to our <a href="#" id="signup-terms-link" target="_blank">Terms</a> and <a href="#" id="signup-privacy-link" target="_blank">Privacy Notice</a>. Providing your email is voluntary and used to save game progress.</label>
+          <label for="signup-terms" id="signup-terms-lbl" dir="ltr">By signing up, you agree to our <a href="javascript:void(0)" id="signup-terms-link" onclick="openTermsModal(); event.stopPropagation()">Terms</a> and <a href="javascript:void(0)" id="signup-privacy-link" onclick="openPrivacyModal(); event.stopPropagation()">Privacy Notice</a>. Providing your email is voluntary and used to save game progress. This game uses Google Analytics to improve the user experience.</label>
         </div>
         <div id="login-error"></div>
         <button class="btn-auth-submit" id="login-submit-btn" onclick="submitEmailAuth()">Sign in</button>
@@ -3452,7 +3561,7 @@
       <p id="google-signup-desc" style="font-size:0.88rem;color:var(--muted);text-align:center;margin:0;">Almost there! Just a couple of things:</p>
       <div class="google-terms-row" style="display:flex;align-items:flex-start;gap:8px;font-size:0.78rem;color:var(--text);line-height:1.45;">
         <input type="checkbox" id="google-signup-terms" style="margin-top:2px;accent-color:#1a6fd4;cursor:pointer;flex-shrink:0;"/>
-        <label for="google-signup-terms" id="google-signup-terms-lbl" dir="ltr" style="cursor:pointer;">By signing up, you agree to our <a href="#" id="google-terms-link" target="_blank">Terms</a> and <a href="#" id="google-privacy-link" target="_blank">Privacy Notice</a>. Providing your email is voluntary and used to save game progress.</label>
+        <label for="google-signup-terms" id="google-signup-terms-lbl" dir="ltr" style="cursor:pointer;">By signing up, you agree to our <a href="javascript:void(0)" id="google-terms-link" onclick="openTermsModal(); event.stopPropagation()">Terms</a> and <a href="javascript:void(0)" id="google-privacy-link" onclick="openPrivacyModal(); event.stopPropagation()">Privacy Notice</a>. Providing your email is voluntary and used to save game progress. This game uses Google Analytics to improve the user experience.</label>
       </div>
       <div style="display:flex;align-items:flex-start;gap:8px;font-size:0.78rem;color:var(--muted);line-height:1.45;">
         <input type="checkbox" id="google-signup-eu" style="margin-top:3px;accent-color:#1a6fd4;cursor:pointer;flex-shrink:0;"/>
@@ -3716,6 +3825,8 @@ const STRINGS = {
     layer_street:     "🗺️ Street map",
     layer_satellite:  "🛰️ Satellite",
     fact_close:       "Close",
+    fact_login_link:  "Log in",
+    fact_login_text:  " for fun facts",
     menu_desc:        "Pin the location on the map.",
     diff_easy:        "Easy",
     diff_medium:      "Medium",
@@ -3754,6 +3865,8 @@ const STRINGS = {
     layer_street:     "🗺️ מפת רחוב",
     layer_satellite:  "🛰️ לוויין",
     fact_close:       "סגור",
+    fact_login_link:  "התחבר",
+    fact_login_text:  " לעובדות מעניינות",
     menu_desc:        "מצא/י את המיקום על המפה",
     diff_easy:        "קל",
     diff_medium:      "בינוני",
@@ -3819,6 +3932,8 @@ function applyLang() {
   document.getElementById('lbl-score').textContent = t('score');
   document.getElementById('lbl-round').textContent = t('round');
   document.getElementById('fact-modal-close').textContent = t('fact_close');
+  document.getElementById('fact-login-link').textContent  = t('fact_login_link');
+  document.getElementById('fact-login-text').textContent  = t('fact_login_text');
   document.getElementById('menu-desc').innerHTML = t('menu_desc');
   document.getElementById('menu-mode-title').textContent = t('game_mode');
   document.getElementById('d-easy').textContent   = t('diff_easy');
@@ -3891,11 +4006,21 @@ function applyLang() {
   if (!window._fbUser) {
     document.getElementById('auth-label').textContent = lang === 'he' ? 'התחברות' : 'Log in';
   }
-  if (document.getElementById('auth-dd-switch')) {
-    document.getElementById('auth-dd-switch').textContent   = lang === 'he' ? 'החלף חשבון'  : 'Switch account';
+  if (document.getElementById('auth-dd-settings')) {
     document.getElementById('auth-dd-signout').textContent  = lang === 'he' ? 'התנתקות'     : 'Sign out';
     document.getElementById('auth-dd-settings').textContent = lang === 'he' ? 'הגדרות'      : 'Settings';
   }
+  if (document.getElementById('auth-dd-switch')) {
+    document.getElementById('auth-dd-switch').textContent   = lang === 'he' ? 'החלף חשבון'  : 'Switch account';
+  }
+  const pmHe = document.getElementById('privacy-modal-he');
+  const pmEn = document.getElementById('privacy-modal-en');
+  if (pmHe) pmHe.style.display = lang === 'he' ? '' : 'none';
+  if (pmEn) pmEn.style.display = lang === 'he' ? 'none' : '';
+  const tmHe = document.getElementById('terms-modal-he');
+  const tmEn = document.getElementById('terms-modal-en');
+  if (tmHe) tmHe.style.display = lang === 'he' ? '' : 'none';
+  if (tmEn) tmEn.style.display = lang === 'he' ? 'none' : '';
   if (document.getElementById('settings-title')) {
     document.getElementById('settings-title').textContent        = lang === 'he' ? '⚙️ הגדרות'   : '⚙️ Settings';
     document.getElementById('settings-lbl-nickname').textContent = lang === 'he' ? 'כינוי'       : 'Nickname';
@@ -3922,8 +4047,8 @@ function applyLang() {
       euGoogleLbl.dir = lang === 'he' ? 'rtl' : 'ltr';
       euGoogleLbl.textContent = lang === 'he' ? EU_TEXT_HE : EU_TEXT_EN;
     }
-    const TERMS_TEXT_HE = 'בהרשמה, אתה מסכים ל<a href="#" target="_blank">תנאי השימוש</a> ול<a href="#" target="_blank">הודעת הפרטיות</a> שלנו. מסירת האימייל היא וולונטרית ומשמשת לשמירת התקדמות המשחק.';
-    const TERMS_TEXT_EN = 'By signing up, you agree to our <a href="#" target="_blank">Terms</a> and <a href="#" target="_blank">Privacy Notice</a>. Providing your email is voluntary and used to save game progress.';
+    const TERMS_TEXT_HE = 'בהרשמה, אתה מסכים ל<a href="javascript:void(0)" onclick="openTermsModal(); event.stopPropagation()">תנאי השימוש</a> ול<a href="javascript:void(0)" onclick="openPrivacyModal(); event.stopPropagation()">מדיניות הפרטיות</a> שלנו. מסירת האימייל היא וולונטרית ומשמשת לשמירת התקדמות המשחק. המשחק משתמש ב-Google Analytics לצורך שיפור חווית המשתמש.';
+    const TERMS_TEXT_EN = 'By signing up, you agree to our <a href="javascript:void(0)" onclick="openTermsModal(); event.stopPropagation()">Terms of Use</a> and <a href="javascript:void(0)" onclick="openPrivacyModal(); event.stopPropagation()">Privacy Policy</a>. Providing your email is voluntary and used to save game progress. This game uses Google Analytics to improve the user experience.';
     const termsSignupLbl = document.getElementById('signup-terms-lbl');
     if (termsSignupLbl) {
       termsSignupLbl.dir = lang === 'he' ? 'rtl' : 'ltr';
@@ -4016,7 +4141,7 @@ const map = L.map('map', {
 // Create two tile layers - satellite and street map
 const satelliteLayer = L.tileLayer(
   'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
-  { attribution: '&copy; Esri', maxZoom: 18 }
+  { attribution: 'Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community', maxZoom: 18 }
 );
 
 // Hebrew street map (OSM default — labels in Hebrew)
@@ -4690,17 +4815,43 @@ let factModalOpen = false;
 
 function openFactModal(townName) {
   const town = TOWNS.find(t => t.name === townName);
+  const titleEl = document.getElementById('fact-modal-title');
+  const bodyEl  = document.getElementById('fact-modal-body');
+  const loginPromptEl = document.getElementById('fact-login-prompt');
+  const factModal = document.getElementById('fact-modal');
+
+  titleEl.textContent = lang === 'he' ? (town?.nameHe || townName) : townName;
+  titleEl.dir = lang === 'he' ? 'rtl' : 'ltr';
+
+  if (!window._fbUser) {
+    window._pendingFactTown = townName;
+    bodyEl.style.display = 'none';
+    loginPromptEl.style.display = '';
+    loginPromptEl.dir = lang === 'he' ? 'rtl' : 'ltr';
+    document.getElementById('fact-login-link').textContent = t('fact_login_link');
+    document.getElementById('fact-login-text').textContent = t('fact_login_text');
+    factModal.style.display = 'flex';
+    factModalOpen = true;
+    trapFocus(factModal);
+    return;
+  }
+
+  window._pendingFactTown = null;
+  bodyEl.style.display = '';
+  loginPromptEl.style.display = 'none';
   const fact = lang === 'he'
     ? (town?.factHe || town?.fact || 'אין עובדה זמינה.')
     : (town?.fact  || 'No fact available.');
-  document.getElementById('fact-modal-title').textContent = lang === 'he' ? (town?.nameHe || townName) : townName;
-  document.getElementById('fact-modal-body').textContent = fact;
-  document.getElementById('fact-modal-body').dir = lang === 'he' ? 'rtl' : 'ltr';
-  document.getElementById('fact-modal-title').dir = lang === 'he' ? 'rtl' : 'ltr';
-  const factModal = document.getElementById('fact-modal');
+  bodyEl.textContent = fact;
+  bodyEl.dir = lang === 'he' ? 'rtl' : 'ltr';
   factModal.style.display = 'flex';
   factModalOpen = true;
   trapFocus(factModal);
+}
+
+function openLoginModalForFact() {
+  closeFactModal();
+  openLoginModal();
 }
 
 function closeFactModal() {
@@ -6288,7 +6439,6 @@ document.getElementById('login-modal').addEventListener('click', e => {
 function toggleAuthMode() {
   _authMode = _authMode === 'signin' ? 'signup' : 'signin';
   const isSignup = _authMode === 'signup';
-  document.getElementById('login-name').style.display     = isSignup ? 'block' : 'none';
   document.getElementById('login-submit-btn').textContent = isSignup ? 'Create account' : 'Sign in';
   document.getElementById('login-toggle').innerHTML = isSignup
     ? `Already have an account? <a onclick="toggleAuthMode()">Sign in</a>`
@@ -6301,9 +6451,12 @@ function toggleAuthMode() {
 
 async function signInGoogle() {
   const { GoogleAuthProvider, signInWithPopup } = window._fbFns;
+  const card = document.getElementById('login-card');
+  card.classList.add('google-pending');
   try {
     const provider = new GoogleAuthProvider();
     const result = await signInWithPopup(window._fbAuth, provider);
+    card.classList.remove('google-pending');
     const { getDoc, doc } = await Promise.resolve(window._fbFns);
     const snap = await getDoc(doc(window._fbDb, 'users', result.user.uid));
     if (!snap.exists()) {
@@ -6315,6 +6468,7 @@ async function signInGoogle() {
       await _postAuthActions();
     }
   } catch (e) {
+    card.classList.remove('google-pending');
     document.getElementById('login-error').textContent = e.message;
   }
 }
@@ -6342,6 +6496,12 @@ async function submitGoogleSignup() {
   }
 }
 async function _postAuthActions() {
+  if (window._pendingFactTown) {
+    const town = window._pendingFactTown;
+    window._pendingFactTown = null;
+    openFactModal(town);
+    return;
+  }
   if (_dpPendingScore !== null && document.getElementById('daily-percentile-popup').classList.contains('show')) {
     showDailyPercentile(_dpPendingScore);
   } else if (document.getElementById('scoreboard-panel').classList.contains('show')) {
@@ -6353,19 +6513,16 @@ async function _postAuthActions() {
 }
 
 async function submitEmailAuth() {
-  const { createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } = window._fbFns;
+  const { createUserWithEmailAndPassword, signInWithEmailAndPassword } = window._fbFns;
   const email    = document.getElementById('login-email').value.trim();
   const password = document.getElementById('login-password').value;
-  const name     = document.getElementById('login-name').value.trim();
   const errEl    = document.getElementById('login-error');
   errEl.textContent = '';
   if (!email || !password) { errEl.textContent = 'Please fill in all fields.'; return; }
   try {
     if (_authMode === 'signup') {
-      if (!name) { errEl.textContent = 'Please enter a display name.'; return; }
       if (!document.getElementById('signup-terms').checked) { errEl.textContent = 'Please agree to the Terms and Privacy Notice to continue.'; return; }
       const cred = await createUserWithEmailAndPassword(window._fbAuth, email, password);
-      await updateProfile(cred.user, { displayName: name });
       const emailUpdates = document.getElementById('signup-email-updates').checked;
       const { setDoc, doc } = window._fbFns;
       await setDoc(doc(window._fbDb, 'users', cred.user.uid), { emailUpdates }, { merge: true });
@@ -7031,6 +7188,18 @@ function closeSettingsModal() {
   modal.classList.remove('open');
   releaseFocus(modal);
   hideDeleteConfirm();
+}
+function openPrivacyModal() {
+  document.getElementById('privacy-modal').classList.add('open');
+}
+function closePrivacyModal() {
+  document.getElementById('privacy-modal').classList.remove('open');
+}
+function openTermsModal() {
+  document.getElementById('terms-modal').classList.add('open');
+}
+function closeTermsModal() {
+  document.getElementById('terms-modal').classList.remove('open');
 }
 document.getElementById('settings-modal').addEventListener('click', e => {
   if (e.target === document.getElementById('settings-modal')) closeSettingsModal();
